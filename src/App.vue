@@ -929,7 +929,7 @@ const resetCamera = () => {
         </label>
       </div>
 
-      <div class="tooltip-hint">ctrl + 휠로 화면 확대/축소!</div>
+      <div class="tooltip-hint">ctrl + 휠로 화면 확대/축소</div>
 
       <div class="control-actions">
         <button class="reset" type="button" @click="resetCamera">리셋</button>
@@ -1288,7 +1288,7 @@ const resetCamera = () => {
             <span class="scenes-footer-sep">•</span>
             <a
               class="scenes-footer-link"
-              href="https://your-website.com"
+              href="https://playentry.org/community/tips/697db740fcc2be1209a6bbba"
               target="_blank"
               rel="noopener noreferrer"
             >
