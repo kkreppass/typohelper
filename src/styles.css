@@ -554,7 +554,7 @@ input[type="number"] {
   border-color: #4f80ff;
 }
 
-.object-controls {
+.export-group, .object-controls {
   display: flex;
   gap: 8px;
 }

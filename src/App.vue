@@ -1,6 +1,7 @@
 /** todo: - keyframe 기능 - 글상자 수정 */
 <script setup>
 import { computed, ref, watch } from "vue";
+import { scenesToProject } from "./export.js";
 
 import arrowUpImg from "./assets/arrow_up.png";
 import arrowDownImg from "./assets/arrow_down.png";
@@ -305,11 +306,12 @@ const addImageObject = () => {
   input.onchange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      const rawPromise = file.arrayBuffer();
       const reader = new FileReader();
       reader.onload = (event) => {
         // 이미지 로드 후 원본 비율 계산
         const img = new Image();
-        img.onload = () => {
+        img.onload = async () => {
           const aspectRatio = img.naturalWidth / img.naturalHeight;
           const baseSize = 100 / camZoom.value;
           const width = baseSize;
@@ -326,6 +328,7 @@ const addImageObject = () => {
             width: width,
             height: height,
             src: event.target.result,
+            raw: new Uint8Array(await rawPromise),
           });
         };
         img.src = event.target.result;
@@ -358,7 +361,12 @@ const addTextObject = () => {
 };
 
 const deleteObject = (id) => {
-  objects.value = objects.value.filter((obj) => obj.id !== id);
+  // objects.value = array 형태로 처리할 경우, scenes와 다른 objects를 참조하게 됩니다.
+  // 그러므로 의도적으로 참조를 유지하는 형태를 사용합니다.
+  const filtered = objects.value.filter((obj) => obj.id !== id);
+  objects.value.length = 0;
+  objects.value.push(...filtered);
+
   if (selectedObjectId.value === id) {
     selectedObjectId.value = null;
   }
@@ -852,6 +860,24 @@ const resetCamera = () => {
   prevCamX.value = 0;
   prevCamY.value = 0;
 };
+
+const anchor = document.createElement("a");
+anchor.download = "output.ent";
+
+const exportToEntryProject = () => {
+  const out = scenesToProject(scenes.value, {
+    x: camX.value,
+    y: camY.value,
+    rotation: camRot.value,
+    scale: camZoom.value,
+  });
+
+  const blob = new Blob([out]);
+  anchor.href = URL.createObjectURL(blob);
+  anchor.click();
+
+  setTimeout(URL.revokeObjectURL, 100, anchor.href);
+};
 </script>
 
 <template>
@@ -864,6 +890,12 @@ const resetCamera = () => {
       }"
       :class="{ dragging: isDragging, collapsed: sidebarWidth === 0 }"
     >
+      <div class="export-group">
+        <button class="add-btn" type="button" @click="exportToEntryProject">
+          .ent 내보내기
+        </button>
+      </div>
+
       <div class="control-group">
         <label>
           <div class="label-header">
