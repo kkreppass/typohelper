@@ -158,6 +158,7 @@ const getTextObjectData = (obj, scene, isLast) => ({
   entity: {
     ...getBaseEntityData(obj),
     font: `${obj.fontSize}px Inter,Pretendard,system-ui,-apple-system,sans-serif`,
+    colour: "#2c313d",
     bgColor: "#fff",
   },
   sprite: {
