@@ -1,6 +1,7 @@
 /** todo: - keyframe 기능 - 글상자 수정 */
 <script setup>
 import { computed, ref, watch } from "vue";
+import { scenesToProject } from "./export.js";
 
 import arrowUpImg from "./assets/arrow_up.png";
 import arrowDownImg from "./assets/arrow_down.png";
@@ -346,7 +347,12 @@ const addTextObject = () => {
 };
 
 const deleteObject = (id) => {
-  objects.value = objects.value.filter((obj) => obj.id !== id);
+  // objects.value = array 형태로 처리할 경우, scenes와 다른 objects를 참조하게 됩니다.
+  // 그러므로 의도적으로 참조를 유지하는 형태를 사용합니다.
+  const filtered = objects.value.filter((obj) => obj.id !== id);
+  objects.value.length = 0;
+  objects.value.push(...filtered);
+
   if (selectedObjectId.value === id) {
     selectedObjectId.value = null;
   }
@@ -848,6 +854,31 @@ const resetCamera = () => {
   prevCamX.value = 0;
   prevCamY.value = 0;
 };
+
+const anchor = document.createElement("a");
+anchor.download = "output.ent";
+
+/**
+ * @param {Iterable<number>} data
+ */
+const toBase64 = data => {
+  const arr = [...data];
+  const latin1 = arr.map(v => String.fromCharCode(v)).join("");
+  return btoa(latin1);
+};
+
+const exportToEntryProject = () => {
+  const out = scenesToProject(scenes.value, {
+    x: camX.value,
+    y: camY.value,
+    rotation: camRot.value,
+    scale: camZoom.value,
+  });
+
+  const base64 = toBase64(out);
+  anchor.href = `data:application/x-entryapp;base64,${base64}`;
+  anchor.click();
+};
 </script>
 
 <template>
@@ -860,6 +891,12 @@ const resetCamera = () => {
       }"
       :class="{ dragging: isDragging, collapsed: sidebarWidth === 0 }"
     >
+      <div class="export-group">
+        <button class="add-btn" type="button" @click="exportToEntryProject">
+          .ent 내보내기
+        </button>
+      </div>
+
       <div class="control-group">
         <label>
           <div class="label-header">
