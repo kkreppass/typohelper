@@ -159,8 +159,9 @@ const getCameraState = () => {
     camY: camY.value,
     camRot: camRot.value,
     camZoom: camZoom.value,
-    camWorldX: camWorldX.value,
-    camWorldY: camWorldY.value,
+    // camWorld*는 렌더링에 쓰는 "월드 기준" 이동량(회전과 무관)으로, camX/camY와 동일하게 유지
+    camWorldX: camX.value,
+    camWorldY: camY.value,
   };
 };
 
@@ -170,8 +171,9 @@ const applyCameraState = (state) => {
   camY.value = state?.camY ?? 0;
   camRot.value = state?.camRot ?? 0;
   camZoom.value = state?.camZoom ?? 1;
-  camWorldX.value = state?.camWorldX ?? 0;
-  camWorldY.value = state?.camWorldY ?? 0;
+  // camWorld*는 camX/camY와 동일하게 유지 (기존 저장 데이터 호환을 위해 state값은 무시)
+  camWorldX.value = camX.value;
+  camWorldY.value = camY.value;
   prevCamX.value = camX.value;
   prevCamY.value = camY.value;
   isRestoringCamera.value = false;
@@ -825,22 +827,13 @@ const worldTransform = computed(() => {
   };
 });
 
-watch([camX, camY, camRot], () => {
+watch([camX, camY], () => {
   if (isRestoringCamera.value) return;
-  const deltaX = camX.value - prevCamX.value;
-  const deltaY = camY.value - prevCamY.value;
-
-  if (deltaX !== 0 || deltaY !== 0) {
-    const rot = (camRot.value * Math.PI) / 180;
-    const cos = Math.cos(rot);
-    const sin = Math.sin(rot);
-
-    camWorldX.value += deltaX * cos - deltaY * sin;
-    camWorldY.value += deltaX * sin + deltaY * cos;
-
-    prevCamX.value = camX.value;
-    prevCamY.value = camY.value;
-  }
+  // 카메라 X/Y는 월드 좌표계의 축과 평행하게 움직여야 하므로 회전값을 섞지 않는다.
+  camWorldX.value = camX.value;
+  camWorldY.value = camY.value;
+  prevCamX.value = camX.value;
+  prevCamY.value = camY.value;
 });
 
 watch([camX, camY, camRot, camZoom, camWorldX, camWorldY], () => {
