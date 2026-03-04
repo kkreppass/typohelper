@@ -117,18 +117,9 @@ const unscaleClientPoint = (clientX, clientY) => {
   };
 };
 
-// 월드 <-> 카메라(화면) 좌표 변환
-// - camera space: 화면 중심 기준(px), 회전/줌이 적용된 "뷰" 좌표
 const worldToCameraPoint = (worldX, worldY) => {
-  // camera 좌표계는 항상 Y가 위쪽(+)이 되도록, Y축 반전을 "회전 전에" 적용한다.
-  // (Y축을 마지막에 반전하면 회전과 섞일 때 방향이 직관과 어긋날 수 있음)
-  // 렌더링 transform:
-  //   scale(zoom) rotate(-rot) translate(-camWorldX, +camWorldY)
-  // 여기서 worldY/camWorldY는 DOM 좌표계(Y 아래 +)이므로, camera space(y 위 +)로 변환해 회전한다.
   const dx = (worldX - camWorldX.value) * camZoom.value;
   const dy = -(worldY + camWorldY.value) * camZoom.value;
-
-  // CSS의 rotate(-camRot)는 Y-down 기준이므로, Y-up으로 변환한 뒤에는 각도 부호가 반전된다.
   const rot = (camRot.value * Math.PI) / 180;
   const cos = Math.cos(rot);
   const sin = Math.sin(rot);
@@ -171,7 +162,6 @@ const applyCameraState = (state) => {
   camY.value = state?.camY ?? 0;
   camRot.value = state?.camRot ?? 0;
   camZoom.value = state?.camZoom ?? 1;
-  // camWorld*는 camX/camY와 동일하게 유지 (기존 저장 데이터 호환을 위해 state값은 무시)
   camWorldX.value = camX.value;
   camWorldY.value = camY.value;
   prevCamX.value = camX.value;
@@ -462,8 +452,6 @@ const handleObjectDrag = (e) => {
         objectDragStart.axisLock = absX >= absY ? "x" : "y";
       }
     }
-
-    // axisLock: "x" => 수평 이동만(= Y 고정), "y" => 수직 이동만(= X 고정)
     if (objectDragStart.axisLock === "x") {
       nextY = objectDragStart.objY;
     } else if (objectDragStart.axisLock === "y") {
